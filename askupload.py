@@ -1,7 +1,9 @@
 import streamlit as st
 # from langchain import LangChain
 from sentence_transformers import SentenceTransformer
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 
 # Initialize SentenceTransformer
 model = SentenceTransformer('sentence-transformers/multi-qa-MiniLM-L6-cos-v1')
@@ -22,7 +24,7 @@ if uploaded_file is not None and question:
     vectorized_content = model.encode([file_content])
 
     # New way to call the OpenAI API
-    response = openai.ChatCompletion.create(
+    response = client.Chat.Completion.create(
         model="gpt-3.5-turbo",  # Adjust the model as needed
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
