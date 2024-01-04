@@ -1,14 +1,6 @@
 import streamlit as st
-# from langchain import LangChain
 from sentence_transformers import SentenceTransformer
 from openai import OpenAI
-from dotenv import load_dotenv
-import os
-
-load_dotenv()  # Load the environment variables from .env file
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-
-client = OpenAI()
 
 # Initialize SentenceTransformer
 model = SentenceTransformer('sentence-transformers/multi-qa-MiniLM-L6-cos-v1')
@@ -28,9 +20,11 @@ if uploaded_file is not None and question:
     # Vectorize content
     vectorized_content = model.encode([file_content])
 
-    # New way to call the OpenAI API
+    # Use OpenAI API securely
+    OPENAI_API_KEY = st.secrets["openai_api_key"]
+    client = OpenAI(api_key=OPENAI_API_KEY)
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",  # Adjust the model as needed
+        model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": question}
