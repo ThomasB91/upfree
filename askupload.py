@@ -3,8 +3,7 @@ import streamlit as st
 from sentence_transformers import SentenceTransformer
 import openai
 
-# Initialize LangChain and SentenceTransformer
-# langchain = LangChain()
+# Initialize SentenceTransformer
 model = SentenceTransformer('sentence-transformers/multi-qa-MiniLM-L6-cos-v1')
 
 # Streamlit interface
@@ -22,13 +21,17 @@ if uploaded_file is not None and question:
     # Vectorize content
     vectorized_content = model.encode([file_content])
 
-    # Answer the question using OpenAI API (replace with RAG if needed)
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=f"Question: {question}\nAnswer:",
-        max_tokens=150
+    # New way to call the OpenAI API
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",  # Adjust the model as needed
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": question}
+        ]
     )
 
-    st.write("Answer:", response.choices[0].text.strip())
+    # Extracting and displaying the answer
+    answer = response['choices'][0]['message']['content']
+    st.write("Answer:", answer)
 
 # Run this with `streamlit run your_script.py`
