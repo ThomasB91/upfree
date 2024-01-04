@@ -132,6 +132,9 @@ venv.bak/
 .spyderproject
 .spyproject
 
+# Streamlit stuff
+secrets.toml
+
 # Rope project settings
 .ropeproject
 
