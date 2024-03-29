@@ -32,7 +32,7 @@ if uploaded_file is not None and question:
     )
 
     # Extracting and displaying the answer
-    answer = response['choices'][0]['message']['content']
+    answer = response.choices[0].message.content
     st.write("Answer:", answer)
 
 # Run this with `streamlit run your_script.py`
