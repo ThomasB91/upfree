@@ -1,38 +1,40 @@
+import requests
 import streamlit as st
-from sentence_transformers import SentenceTransformer
-from openai import OpenAI
 
-# Initialize SentenceTransformer
-model = SentenceTransformer('sentence-transformers/multi-qa-MiniLM-L6-cos-v1')
+# Flask API endpoint - replace with your actual endpoint
+FLASK_ENDPOINT = "http://127.0.0.1:5001/search"
 
-# Streamlit interface
-st.title("File Vectorization and Question Answering App")
+with st.sidebar:
+    "[View the source code](https://github.com/streamlit/llm-examples/blob/main/Chatbot.py)"
+    "[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/streamlit/llm-examples?quickstart=1)"
 
-# File upload
-uploaded_file = st.file_uploader("Upload a file for vectorization")
-question = st.text_input("Ask a question about the file")
+st.title("💬 Chatbot")
+st.caption("🚀 A streamlit chatbot powered by OpenAI LLM")
 
-# Process file and answer questions
-if uploaded_file is not None and question:
-    # Read file content
-    file_content = uploaded_file.getvalue().decode()
+if "messages" not in st.session_state:
+    st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
 
-    # Vectorize content
-    vectorized_content = model.encode([file_content])
+for msg in st.session_state.messages:
+    st.chat_message(msg["role"]).write(msg["content"])
 
-    # Use OpenAI API securely
-    OPENAI_API_KEY = st.secrets["openai_api_key"]
-    client = OpenAI(api_key=OPENAI_API_KEY)
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": question}
-        ]
-    )
+if prompt := st.chat_input():
+    # Append user's prompt to the conversation
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.chat_message("user").write(prompt)
 
-    # Extracting and displaying the answer
-    answer = response.choices[0].message.content
-    st.write("Answer:", answer)
+    # Prepare data for the POST request to Flask
+    data = {"query": prompt}
 
-# Run this with `streamlit run your_script.py`
+    # Send POST request to Flask app
+    response = requests.post(FLASK_ENDPOINT, json=data)
+
+    if response.status_code == 200:
+        # Get the response from Flask and display it
+        results = response.json()
+        msg = results['results']  # Assuming 'results' contains the text to be displayed
+        st.session_state.messages.append({"role": "assistant", "content": msg})
+        st.chat_message("assistant").write(msg)
+    else:
+        error_message = "Failed to retrieve data. Please try again."
+        st.session_state.messages.append({"role": "assistant", "content": error_message})
+        st.chat_message("assistant").write(error_message)
